@@ -1,38 +1,39 @@
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error, r2_score
 import joblib
 import os
 import sys
 
-# Ensure local imports work
 sys.path.append(os.getcwd())
 from utils.preprocess import preprocess_data
 
 def train():
-    # Load dataset
-    if not os.path.exists('data/StudentPerformanceFactors.csv'):
-        print("Error: StudentPerformanceFactors.csv not found!")
+    csv_path = 'data/StudentPerformanceFactors.csv'
+    if not os.path.exists(csv_path):
+        print("Error: StudentPerformanceFactors.csv not found in data/ folder!")
         return
 
-    df = pd.read_csv('data/StudentPerformanceFactors.csv')
-    
-    # Preprocess
+    df = pd.read_csv(csv_path)
+    print(f"Dataset loaded: {df.shape[0]} rows, {df.shape[1]} columns")
+
     X, y = preprocess_data(df)
-    
-    # Split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
-    # Train Regressor (Predicting continuous marks)
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
+
+    model = RandomForestRegressor(n_estimators=200, max_depth=10, random_state=42, n_jobs=-1)
     model.fit(X_train, y_train)
-    
-    # Save Model
-    if not os.path.exists('model'): os.makedirs('model')
+
+    y_pred = model.predict(X_test)
+    r2  = r2_score(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
+
+    os.makedirs('model', exist_ok=True)
     joblib.dump(model, 'model/model.pkl')
-    
-    score = model.score(X_test, y_test)
-    print(f"Model trained. Accuracy (R2 Score): {score:.2f}")
+
+    print(f"✅ Model saved to model/model.pkl")
+    print(f"   R² Score : {r2:.4f}")
+    print(f"   MAE      : {mae:.2f} marks")
 
 if __name__ == "__main__":
     train()
