@@ -182,8 +182,12 @@ figure { background: transparent !important; }
 _defaults = {
     'logged_in':         False,
     'portal_view':       False,
-    'role':              None,     # 'admin' after login, None when logged out
+    'role':              None,
     'prediction_result': None,
+    'custom_model':      None,
+    'custom_params':     None,
+    'custom_df':         None,
+    '_feat_cache_key':   None,
 }
 for _key, _val in _defaults.items():
     if _key not in st.session_state:
@@ -246,6 +250,33 @@ with st.sidebar:
     Dataset: 6,607 student records<br>
     Features: Attendance, Study Hours,<br>
     &nbsp;&nbsp;Previous Scores, Motivation
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("<div class='section-header'>📬 Contact Us</div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='font-size:0.78rem; color:#94a3b8; line-height:1.8;'>
+        <div style='color:#e2e8f0; font-weight:700; font-size:0.85rem; margin-bottom:10px;'>🏫 Team CodeNova — PS 05</div>
+        <div style='padding:8px 0; border-bottom:1px solid #252a3a;'>
+            👤 <b style='color:#e2e8f0;'>Rutuj</b><br>
+            <a href='mailto:rutuj@example.com' style='color:#4f8ef7; text-decoration:none; font-size:0.75rem;'>rutuj@example.com</a>
+        </div>
+        <div style='padding:8px 0; border-bottom:1px solid #252a3a;'>
+            👤 <b style='color:#e2e8f0;'>Jogeshwari</b><br>
+            <a href='mailto:jogeshwari@example.com' style='color:#4f8ef7; text-decoration:none; font-size:0.75rem;'>jogeshwari@example.com</a>
+        </div>
+        <div style='padding:8px 0; border-bottom:1px solid #252a3a;'>
+            👤 <b style='color:#e2e8f0;'>Aditi</b><br>
+            <a href='mailto:aditi@example.com' style='color:#4f8ef7; text-decoration:none; font-size:0.75rem;'>aditi@example.com</a>
+        </div>
+        <div style='margin-top:10px; padding:8px 10px; background:#1a1e2b; border-radius:8px; border:1px solid #252a3a;'>
+            <div style='color:#64748b; font-size:0.68rem; margin-bottom:3px;'>🐙 GitHub Repository</div>
+            <a href='https://github.com/Jogeshwari0227/CodeNova' target='_blank'
+               style='color:#4f8ef7; text-decoration:none; font-size:0.72rem; word-break:break-all;'>
+               github.com/Jogeshwari0227/CodeNova
+            </a>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -399,277 +430,277 @@ if st.session_state.get('portal_view', False):
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # # ── Safety Margin / Recovery Calculator ──────────────────────────────────────
-    # st.markdown("---")
-    # st.markdown("""
-    # <div class='section-header'>🛡️ Attendance Recovery Calculator</div>
-    # <div style='color:#64748b; font-size:0.85rem; margin-bottom:16px;'>
-    #     Enter your lecture details to see exactly how many classes you need to attend to exit the defaulters list,
-    #     and optionally plan ahead towards a personal target.
-    # </div>
-    # """, unsafe_allow_html=True)
+    # ── Safety Margin / Recovery Calculator ──────────────────────────────────────
+    st.markdown("---")
+    st.markdown("""
+    <div class='section-header'>🛡️ Attendance Recovery Calculator</div>
+    <div style='color:#64748b; font-size:0.85rem; margin-bottom:16px;'>
+        Enter your lecture details to see exactly how many classes you need to attend to exit the defaulters list,
+        and optionally plan ahead towards a personal target.
+    </div>
+    """, unsafe_allow_html=True)
 
-    # rc1, rc2 = st.columns([1, 1.4], gap="large")
+    rc1, rc2 = st.columns([1, 1.4], gap="large")
 
-    # with rc1:
-    #     st.markdown("<div class='edu-card' style='padding:28px;'>", unsafe_allow_html=True)
-    #     st.markdown("<div class='section-header'>Enter Your Details</div>", unsafe_allow_html=True)
+    with rc1:
+        st.markdown("<div class='edu-card' style='padding:28px;'>", unsafe_allow_html=True)
+        st.markdown("<div class='section-header'>Enter Your Details</div>", unsafe_allow_html=True)
 
-    #     total_lectures  = st.number_input("📚 Total Lectures Conducted", min_value=1, max_value=500, value=100,
-    #                                       help="Total number of lectures held so far this semester")
-    #     attended        = st.number_input("✅ Lectures Attended by You", min_value=0, max_value=500, value=65,
-    #                                       help="Number of lectures you have actually attended")
-    #     future_lectures = st.number_input("📅 Remaining Scheduled Lectures", min_value=0, max_value=300, value=30,
-    #                                       help="How many more lectures are left in the semester")
+        total_lectures  = st.number_input("📚 Total Lectures Conducted", min_value=1, max_value=500, value=100,
+                                          help="Total number of lectures held so far this semester")
+        attended        = st.number_input("✅ Lectures Attended by You", min_value=0, max_value=500, value=65,
+                                          help="Number of lectures you have actually attended")
+        future_lectures = st.number_input("📅 Remaining Scheduled Lectures", min_value=0, max_value=300, value=30,
+                                          help="How many more lectures are left in the semester")
 
-    #     st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
 
-    #     # Mandatory institutional threshold — fixed, always shown
-    #     THRESHOLD = 75
-    #     st.markdown(f"""
-    #     <div style='padding:10px 14px; background:#13161e; border-radius:10px;
-    #                 border:1px solid #facc1540; margin-bottom:10px;'>
-    #         <div style='font-size:0.68rem; color:#64748b; text-transform:uppercase; letter-spacing:1px;'>🏛️ Institutional Minimum (Defaulters List)</div>
-    #         <div style='font-size:1rem; font-weight:800; color:#facc15; margin-top:2px;'>{THRESHOLD}% — Fixed, cannot be changed</div>
-    #     </div>
-    #     """, unsafe_allow_html=True)
+        # Mandatory institutional threshold — fixed, always shown
+        THRESHOLD = 75
+        st.markdown(f"""
+        <div style='padding:10px 14px; background:#13161e; border-radius:10px;
+                    border:1px solid #facc1540; margin-bottom:10px;'>
+            <div style='font-size:0.68rem; color:#64748b; text-transform:uppercase; letter-spacing:1px;'>🏛️ Institutional Minimum (Defaulters List)</div>
+            <div style='font-size:1rem; font-weight:800; color:#facc15; margin-top:2px;'>{THRESHOLD}% — Fixed, cannot be changed</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-    #     # Personal target slider — fully adjustable, separate goal
-    #     personal_target = st.slider(
-    #         "🎯 My Personal Target %",
-    #         min_value=50, max_value=100, value=85,
-    #         help="Set a personal attendance goal beyond the minimum. Must be ≥ 75% to be meaningful."
-    #     )
-    #     if personal_target < THRESHOLD:
-    #         st.warning(f"⚠️ Your personal target ({personal_target}%) is below the institutional minimum ({THRESHOLD}%). You'll still be on the defaulters list even if you hit this target.")
+        # Personal target slider — fully adjustable, separate goal
+        personal_target = st.slider(
+            "🎯 My Personal Target %",
+            min_value=50, max_value=100, value=85,
+            help="Set a personal attendance goal beyond the minimum. Must be ≥ 75% to be meaningful."
+        )
+        if personal_target < THRESHOLD:
+            st.warning(f"⚠️ Your personal target ({personal_target}%) is below the institutional minimum ({THRESHOLD}%). You'll still be on the defaulters list even if you hit this target.")
 
-    #     # Clamp attended to total_lectures
-    #     attended = min(int(attended), int(total_lectures))
-    #     st.markdown("</div>", unsafe_allow_html=True)
+        # Clamp attended to total_lectures
+        attended = min(int(attended), int(total_lectures))
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    # with rc2:
-    #     total_lectures  = int(total_lectures)
-    #     future_lectures = int(future_lectures)
-    #     attended        = int(attended)
+    with rc2:
+        total_lectures  = int(total_lectures)
+        future_lectures = int(future_lectures)
+        attended        = int(attended)
 
-    #     current_pct      = (attended / total_lectures * 100) if total_lectures > 0 else 0
-    #     max_possible_att = (attended + future_lectures) / (total_lectures + future_lectures) * 100 \
-    #                        if (total_lectures + future_lectures) > 0 else current_pct
+        current_pct      = (attended / total_lectures * 100) if total_lectures > 0 else 0
+        max_possible_att = (attended + future_lectures) / (total_lectures + future_lectures) * 100 \
+                           if (total_lectures + future_lectures) > 0 else current_pct
 
-    #     def calc_lectures_needed(target_pct, attended, total):
-    #         """How many consecutive lectures must a student attend to reach target_pct?"""
-    #         frac = target_pct / 100
-    #         shortfall = frac * total - attended
-    #         if shortfall <= 0:
-    #             return 0
-    #         return max(0, math.ceil(shortfall / (1 - frac)))
+        def calc_lectures_needed(target_pct, attended, total):
+            """How many consecutive lectures must a student attend to reach target_pct?"""
+            frac = target_pct / 100
+            shortfall = frac * total - attended
+            if shortfall <= 0:
+                return 0
+            return max(0, math.ceil(shortfall / (1 - frac)))
 
-    #     def calc_can_miss(target_pct, attended, total, future):
-    #         """How many of the remaining future lectures can the student miss and still end >= target?"""
-    #         frac = target_pct / 100
-    #         min_needed = max(0, math.ceil(frac * (total + future) - attended))
-    #         return max(0, future - min_needed)
+        def calc_can_miss(target_pct, attended, total, future):
+            """How many of the remaining future lectures can the student miss and still end >= target?"""
+            frac = target_pct / 100
+            min_needed = max(0, math.ceil(frac * (total + future) - attended))
+            return max(0, future - min_needed)
 
-    #     # ── Compute for both targets ──
-    #     thresh_needed   = calc_lectures_needed(THRESHOLD, attended, total_lectures)
-    #     personal_needed = calc_lectures_needed(personal_target, attended, total_lectures)
+        # ── Compute for both targets ──
+        thresh_needed   = calc_lectures_needed(THRESHOLD, attended, total_lectures)
+        personal_needed = calc_lectures_needed(personal_target, attended, total_lectures)
 
-    #     thresh_safe   = current_pct >= THRESHOLD
-    #     personal_safe = current_pct >= personal_target
+        thresh_safe   = current_pct >= THRESHOLD
+        personal_safe = current_pct >= personal_target
 
-    #     thresh_possible   = thresh_needed <= future_lectures
-    #     personal_possible = personal_needed <= future_lectures
+        thresh_possible   = thresh_needed <= future_lectures
+        personal_possible = personal_needed <= future_lectures
 
-    #     # ── SECTION A: Mandatory 75% status ──────────────────────────────────────
-    #     st.markdown(f"""
-    #     <div style='font-size:0.72rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
-    #                 color:#facc15; margin-bottom:8px;'>① Mandatory Threshold — {THRESHOLD}%</div>
-    #     """, unsafe_allow_html=True)
+        # ── SECTION A: Mandatory 75% status ──────────────────────────────────────
+        st.markdown(f"""
+        <div style='font-size:0.72rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+                    color:#facc15; margin-bottom:8px;'>① Mandatory Threshold — {THRESHOLD}%</div>
+        """, unsafe_allow_html=True)
 
-    #     if thresh_safe:
-    #         thresh_can_miss = calc_can_miss(THRESHOLD, attended, total_lectures, future_lectures)
-    #         thresh_min_future = max(0, future_lectures - thresh_can_miss)
-    #         st.markdown(f"""
-    #         <div class='edu-card' style='border-left:4px solid #34d399; padding:22px; margin-bottom:16px;'>
-    #             <div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;'>
-    #                 <div>
-    #                     <div style='font-size:2.2rem; font-weight:800; color:#34d399; font-family:"Space Mono",monospace; line-height:1;'>{current_pct:.1f}%</div>
-    #                     <div style='color:#64748b; font-size:0.8rem; margin-top:2px;'>Current Attendance</div>
-    #                 </div>
-    #                 <span class='badge badge-green'>✅ NOT A DEFAULTER</span>
-    #             </div>
-    #             <div style='margin-top:16px; background:#13161e; border-radius:10px; padding:14px; text-align:center;'>
-    #                 <div style='color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;'>Safety Buffer — Lectures You Can Still Miss</div>
-    #                 <div style='font-size:2.8rem; font-weight:800; color:#34d399; font-family:"Space Mono",monospace; line-height:1;'>{thresh_can_miss}</div>
-    #                 <div style='color:#64748b; font-size:0.78rem; margin-top:4px;'>Must attend at least <b style='color:#e2e8f0;'>{thresh_min_future}</b> of {future_lectures} remaining lectures</div>
-    #             </div>
-    #         </div>
-    #         """, unsafe_allow_html=True)
-    #     elif not thresh_possible:
-    #         st.markdown(f"""
-    #         <div class='edu-card' style='border-left:4px solid #f87171; padding:22px; margin-bottom:16px;'>
-    #             <div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;'>
-    #                 <div>
-    #                     <div style='font-size:2.2rem; font-weight:800; color:#f87171; font-family:"Space Mono",monospace; line-height:1;'>{current_pct:.1f}%</div>
-    #                     <div style='color:#64748b; font-size:0.8rem; margin-top:2px;'>Current Attendance</div>
-    #                 </div>
-    #                 <span class='badge badge-red'>🚨 RECOVERY IMPOSSIBLE</span>
-    #             </div>
-    #             <div style='margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:10px;'>
-    #                 <div style='background:#13161e; border-radius:10px; padding:12px; text-align:center;'>
-    #                     <div style='color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px;'>Lectures Required</div>
-    #                     <div style='font-size:1.5rem; font-weight:800; color:#f87171;'>{thresh_needed}</div>
-    #                 </div>
-    #                 <div style='background:#13161e; border-radius:10px; padding:12px; text-align:center;'>
-    #                     <div style='color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px;'>Lectures Available</div>
-    #                     <div style='font-size:1.5rem; font-weight:800; color:#f87171;'>{future_lectures}</div>
-    #                 </div>
-    #             </div>
-    #             <div style='margin-top:12px; color:#64748b; font-size:0.76rem;'>
-    #                 Best case (attend all): <b style='color:#fb923c;'>{max_possible_att:.1f}%</b> — still below {THRESHOLD}%.
-    #                 Shortfall of <b style='color:#f87171;'>{thresh_needed - future_lectures} lectures</b>.
-    #                 Apply for condonation / medical exemption.
-    #             </div>
-    #         </div>
-    #         """, unsafe_allow_html=True)
-    #     else:
-    #         pct_after_thresh = (attended + thresh_needed) / (total_lectures + thresh_needed) * 100
-    #         left_after_thresh = future_lectures - thresh_needed
-    #         left_color = "#34d399" if left_after_thresh > 0 else "#fb923c"
-    #         st.markdown(f"""
-    #         <div class='edu-card' style='border-left:4px solid #fb923c; padding:22px; margin-bottom:16px;'>
-    #             <div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;'>
-    #                 <div>
-    #                     <div style='font-size:2.2rem; font-weight:800; color:#fb923c; font-family:"Space Mono",monospace; line-height:1;'>{current_pct:.1f}%</div>
-    #                     <div style='color:#64748b; font-size:0.8rem; margin-top:2px;'>Current Attendance</div>
-    #                 </div>
-    #                 <span class='badge badge-orange'>⚠️ DEFAULTER — FIXABLE</span>
-    #             </div>
-    #             <div style='margin-top:14px; background:#13161e; border-radius:10px; padding:16px; text-align:center;'>
-    #                 <div style='color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;'>Consecutive Lectures to Exit Defaulters List</div>
-    #                 <div style='font-size:3.5rem; font-weight:800; color:#4f8ef7; font-family:"Space Mono",monospace; line-height:1;'>{thresh_needed}</div>
-    #             </div>
-    #             <div style='margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:10px;'>
-    #                 <div style='background:#13161e; border-radius:10px; padding:12px; text-align:center;'>
-    #                     <div style='color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px;'>Attendance After</div>
-    #                     <div style='font-size:1.3rem; font-weight:700; color:#34d399;'>{pct_after_thresh:.1f}%</div>
-    #                     <div style='color:#64748b; font-size:0.68rem;'>≥ {THRESHOLD}% ✓</div>
-    #                 </div>
-    #                 <div style='background:#13161e; border-radius:10px; padding:12px; text-align:center;'>
-    #                     <div style='color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px;'>Lectures Left After</div>
-    #                     <div style='font-size:1.3rem; font-weight:700; color:{left_color};'>{left_after_thresh}</div>
-    #                     <div style='color:#64748b; font-size:0.68rem;'>of {future_lectures} remaining</div>
-    #                 </div>
-    #             </div>
-    #         </div>
-    #         """, unsafe_allow_html=True)
+        if thresh_safe:
+            thresh_can_miss = calc_can_miss(THRESHOLD, attended, total_lectures, future_lectures)
+            thresh_min_future = max(0, future_lectures - thresh_can_miss)
+            st.markdown(f"""
+            <div class='edu-card' style='border-left:4px solid #34d399; padding:22px; margin-bottom:16px;'>
+                <div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;'>
+                    <div>
+                        <div style='font-size:2.2rem; font-weight:800; color:#34d399; font-family:"Space Mono",monospace; line-height:1;'>{current_pct:.1f}%</div>
+                        <div style='color:#64748b; font-size:0.8rem; margin-top:2px;'>Current Attendance</div>
+                    </div>
+                    <span class='badge badge-green'>✅ NOT A DEFAULTER</span>
+                </div>
+                <div style='margin-top:16px; background:#13161e; border-radius:10px; padding:14px; text-align:center;'>
+                    <div style='color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;'>Safety Buffer — Lectures You Can Still Miss</div>
+                    <div style='font-size:2.8rem; font-weight:800; color:#34d399; font-family:"Space Mono",monospace; line-height:1;'>{thresh_can_miss}</div>
+                    <div style='color:#64748b; font-size:0.78rem; margin-top:4px;'>Must attend at least <b style='color:#e2e8f0;'>{thresh_min_future}</b> of {future_lectures} remaining lectures</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        elif not thresh_possible:
+            st.markdown(f"""
+            <div class='edu-card' style='border-left:4px solid #f87171; padding:22px; margin-bottom:16px;'>
+                <div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;'>
+                    <div>
+                        <div style='font-size:2.2rem; font-weight:800; color:#f87171; font-family:"Space Mono",monospace; line-height:1;'>{current_pct:.1f}%</div>
+                        <div style='color:#64748b; font-size:0.8rem; margin-top:2px;'>Current Attendance</div>
+                    </div>
+                    <span class='badge badge-red'>🚨 RECOVERY IMPOSSIBLE</span>
+                </div>
+                <div style='margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:10px;'>
+                    <div style='background:#13161e; border-radius:10px; padding:12px; text-align:center;'>
+                        <div style='color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px;'>Lectures Required</div>
+                        <div style='font-size:1.5rem; font-weight:800; color:#f87171;'>{thresh_needed}</div>
+                    </div>
+                    <div style='background:#13161e; border-radius:10px; padding:12px; text-align:center;'>
+                        <div style='color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px;'>Lectures Available</div>
+                        <div style='font-size:1.5rem; font-weight:800; color:#f87171;'>{future_lectures}</div>
+                    </div>
+                </div>
+                <div style='margin-top:12px; color:#64748b; font-size:0.76rem;'>
+                    Best case (attend all): <b style='color:#fb923c;'>{max_possible_att:.1f}%</b> — still below {THRESHOLD}%.
+                    Shortfall of <b style='color:#f87171;'>{thresh_needed - future_lectures} lectures</b>.
+                    Apply for condonation / medical exemption.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            pct_after_thresh = (attended + thresh_needed) / (total_lectures + thresh_needed) * 100
+            left_after_thresh = future_lectures - thresh_needed
+            left_color = "#34d399" if left_after_thresh > 0 else "#fb923c"
+            st.markdown(f"""
+            <div class='edu-card' style='border-left:4px solid #fb923c; padding:22px; margin-bottom:16px;'>
+                <div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;'>
+                    <div>
+                        <div style='font-size:2.2rem; font-weight:800; color:#fb923c; font-family:"Space Mono",monospace; line-height:1;'>{current_pct:.1f}%</div>
+                        <div style='color:#64748b; font-size:0.8rem; margin-top:2px;'>Current Attendance</div>
+                    </div>
+                    <span class='badge badge-orange'>⚠️ DEFAULTER — FIXABLE</span>
+                </div>
+                <div style='margin-top:14px; background:#13161e; border-radius:10px; padding:16px; text-align:center;'>
+                    <div style='color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;'>Consecutive Lectures to Exit Defaulters List</div>
+                    <div style='font-size:3.5rem; font-weight:800; color:#4f8ef7; font-family:"Space Mono",monospace; line-height:1;'>{thresh_needed}</div>
+                </div>
+                <div style='margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:10px;'>
+                    <div style='background:#13161e; border-radius:10px; padding:12px; text-align:center;'>
+                        <div style='color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px;'>Attendance After</div>
+                        <div style='font-size:1.3rem; font-weight:700; color:#34d399;'>{pct_after_thresh:.1f}%</div>
+                        <div style='color:#64748b; font-size:0.68rem;'>≥ {THRESHOLD}% ✓</div>
+                    </div>
+                    <div style='background:#13161e; border-radius:10px; padding:12px; text-align:center;'>
+                        <div style='color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px;'>Lectures Left After</div>
+                        <div style='font-size:1.3rem; font-weight:700; color:{left_color};'>{left_after_thresh}</div>
+                        <div style='color:#64748b; font-size:0.68rem;'>of {future_lectures} remaining</div>
+                    </div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
-    #     # ── SECTION B: Personal Target ────────────────────────────────────────────
-    #     target_label_color = "#a78bfa" if personal_target >= THRESHOLD else "#f87171"
-    #     st.markdown(f"""
-    #     <div style='font-size:0.72rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
-    #                 color:{target_label_color}; margin-bottom:8px; margin-top:4px;'>② Personal Target — {personal_target}%</div>
-    #     """, unsafe_allow_html=True)
+        # ── SECTION B: Personal Target ────────────────────────────────────────────
+        target_label_color = "#a78bfa" if personal_target >= THRESHOLD else "#f87171"
+        st.markdown(f"""
+        <div style='font-size:0.72rem; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+                    color:{target_label_color}; margin-bottom:8px; margin-top:4px;'>② Personal Target — {personal_target}%</div>
+        """, unsafe_allow_html=True)
 
-    #     if personal_safe:
-    #         personal_can_miss = calc_can_miss(personal_target, attended, total_lectures, future_lectures)
-    #         personal_min_future = max(0, future_lectures - personal_can_miss)
-    #         st.markdown(f"""
-    #         <div class='edu-card' style='border-left:4px solid #a78bfa; padding:22px;'>
-    #             <div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;'>
-    #                 <div style='color:#a78bfa; font-size:1rem; font-weight:700;'>Already at {personal_target}% ✓</div>
-    #                 <span class='badge badge-blue'>ON TARGET</span>
-    #             </div>
-    #             <div style='margin-top:12px; background:#13161e; border-radius:10px; padding:14px; text-align:center;'>
-    #                 <div style='color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;'>Can Still Miss (staying above {personal_target}%)</div>
-    #                 <div style='font-size:2.4rem; font-weight:800; color:#a78bfa; font-family:"Space Mono",monospace; line-height:1;'>{personal_can_miss}</div>
-    #                 <div style='color:#64748b; font-size:0.75rem; margin-top:4px;'>Must attend at least <b style='color:#e2e8f0;'>{personal_min_future}</b> of {future_lectures} remaining</div>
-    #             </div>
-    #         </div>
-    #         """, unsafe_allow_html=True)
-    #     elif not personal_possible:
-    #         pct_best = max_possible_att
-    #         st.markdown(f"""
-    #         <div class='edu-card' style='border-left:4px solid #a78bfa; padding:22px;'>
-    #             <div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;'>
-    #                 <div style='color:#a78bfa; font-size:1rem; font-weight:700;'>Target {personal_target}% not reachable this semester</div>
-    #                 <span class='badge badge-blue'>OUT OF REACH</span>
-    #             </div>
-    #             <div style='margin-top:10px; color:#64748b; font-size:0.78rem;'>
-    #                 Best case (attend all remaining): <b style='color:#fb923c;'>{pct_best:.1f}%</b>.
-    #                 You need <b style='color:#a78bfa;'>{personal_needed}</b> lectures but only <b style='color:#e2e8f0;'>{future_lectures}</b> remain.
-    #             </div>
-    #         </div>
-    #         """, unsafe_allow_html=True)
-    #     else:
-    #         pct_after_personal = (attended + personal_needed) / (total_lectures + personal_needed) * 100
-    #         left_after_personal = future_lectures - personal_needed
-    #         left_color_p = "#34d399" if left_after_personal > 0 else "#fb923c"
-    #         # Extra note if personal target < 75 (they'll hit their target but still be a defaulter)
-    #         below_thresh_note = ""
-    #         if personal_target < THRESHOLD:
-    #             below_thresh_note = f"<div style='margin-top:10px; padding:8px 12px; background:#f8717120; border-radius:8px; color:#f87171; font-size:0.75rem;'>⚠️ Even after reaching {personal_target}%, you'll still be on the defaulters list. You need {thresh_needed} lectures to clear {THRESHOLD}%.</div>"
-    #         st.markdown(f"""
-    #         <div class='edu-card' style='border-left:4px solid #a78bfa; padding:22px;'>
-    #             <div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;'>
-    #                 <div style='color:#a78bfa; font-size:1rem; font-weight:700;'>Target: {personal_target}%</div>
-    #                 <span class='badge badge-blue'>REACHABLE</span>
-    #             </div>
-    #             <div style='margin-top:12px; background:#13161e; border-radius:10px; padding:14px; text-align:center;'>
-    #                 <div style='color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;'>Lectures Needed for Personal Target</div>
-    #                 <div style='font-size:3rem; font-weight:800; color:#a78bfa; font-family:"Space Mono",monospace; line-height:1;'>{personal_needed}</div>
-    #             </div>
-    #             <div style='margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:10px;'>
-    #                 <div style='background:#13161e; border-radius:10px; padding:12px; text-align:center;'>
-    #                     <div style='color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px;'>Attendance After</div>
-    #                     <div style='font-size:1.3rem; font-weight:700; color:#a78bfa;'>{pct_after_personal:.1f}%</div>
-    #                 </div>
-    #                 <div style='background:#13161e; border-radius:10px; padding:12px; text-align:center;'>
-    #                     <div style='color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px;'>Lectures Left After</div>
-    #                     <div style='font-size:1.3rem; font-weight:700; color:{left_color_p};'>{left_after_personal}</div>
-    #                 </div>
-    #             </div>
-    #             {below_thresh_note}
-    #         </div>
-    #         """, unsafe_allow_html=True)
+        if personal_safe:
+            personal_can_miss = calc_can_miss(personal_target, attended, total_lectures, future_lectures)
+            personal_min_future = max(0, future_lectures - personal_can_miss)
+            st.markdown(f"""
+            <div class='edu-card' style='border-left:4px solid #a78bfa; padding:22px;'>
+                <div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;'>
+                    <div style='color:#a78bfa; font-size:1rem; font-weight:700;'>Already at {personal_target}% ✓</div>
+                    <span class='badge badge-blue'>ON TARGET</span>
+                </div>
+                <div style='margin-top:12px; background:#13161e; border-radius:10px; padding:14px; text-align:center;'>
+                    <div style='color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;'>Can Still Miss (staying above {personal_target}%)</div>
+                    <div style='font-size:2.4rem; font-weight:800; color:#a78bfa; font-family:"Space Mono",monospace; line-height:1;'>{personal_can_miss}</div>
+                    <div style='color:#64748b; font-size:0.75rem; margin-top:4px;'>Must attend at least <b style='color:#e2e8f0;'>{personal_min_future}</b> of {future_lectures} remaining</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        elif not personal_possible:
+            pct_best = max_possible_att
+            st.markdown(f"""
+            <div class='edu-card' style='border-left:4px solid #a78bfa; padding:22px;'>
+                <div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;'>
+                    <div style='color:#a78bfa; font-size:1rem; font-weight:700;'>Target {personal_target}% not reachable this semester</div>
+                    <span class='badge badge-blue'>OUT OF REACH</span>
+                </div>
+                <div style='margin-top:10px; color:#64748b; font-size:0.78rem;'>
+                    Best case (attend all remaining): <b style='color:#fb923c;'>{pct_best:.1f}%</b>.
+                    You need <b style='color:#a78bfa;'>{personal_needed}</b> lectures but only <b style='color:#e2e8f0;'>{future_lectures}</b> remain.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            pct_after_personal = (attended + personal_needed) / (total_lectures + personal_needed) * 100
+            left_after_personal = future_lectures - personal_needed
+            left_color_p = "#34d399" if left_after_personal > 0 else "#fb923c"
+            # Extra note if personal target < 75 (they'll hit their target but still be a defaulter)
+            below_thresh_note = ""
+            if personal_target < THRESHOLD:
+                below_thresh_note = f"<div style='margin-top:10px; padding:8px 12px; background:#f8717120; border-radius:8px; color:#f87171; font-size:0.75rem;'>⚠️ Even after reaching {personal_target}%, you'll still be on the defaulters list. You need {thresh_needed} lectures to clear {THRESHOLD}%.</div>"
+            st.markdown(f"""
+            <div class='edu-card' style='border-left:4px solid #a78bfa; padding:22px;'>
+                <div style='display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;'>
+                    <div style='color:#a78bfa; font-size:1rem; font-weight:700;'>Target: {personal_target}%</div>
+                    <span class='badge badge-blue'>REACHABLE</span>
+                </div>
+                <div style='margin-top:12px; background:#13161e; border-radius:10px; padding:14px; text-align:center;'>
+                    <div style='color:#64748b; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;'>Lectures Needed for Personal Target</div>
+                    <div style='font-size:3rem; font-weight:800; color:#a78bfa; font-family:"Space Mono",monospace; line-height:1;'>{personal_needed}</div>
+                </div>
+                <div style='margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:10px;'>
+                    <div style='background:#13161e; border-radius:10px; padding:12px; text-align:center;'>
+                        <div style='color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px;'>Attendance After</div>
+                        <div style='font-size:1.3rem; font-weight:700; color:#a78bfa;'>{pct_after_personal:.1f}%</div>
+                    </div>
+                    <div style='background:#13161e; border-radius:10px; padding:12px; text-align:center;'>
+                        <div style='color:#64748b; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px;'>Lectures Left After</div>
+                        <div style='font-size:1.3rem; font-weight:700; color:{left_color_p};'>{left_after_personal}</div>
+                    </div>
+                </div>
+                {below_thresh_note}
+            </div>
+            """, unsafe_allow_html=True)
 
-    #     # ── Visual gauge: all three lines on one chart ──
-    #     st.markdown(f"<div class='section-header' style='margin-top:20px;'>Attendance Progress</div>", unsafe_allow_html=True)
+        # ── Visual gauge: all three lines on one chart ──
+        st.markdown(f"<div class='section-header' style='margin-top:20px;'>Attendance Progress</div>", unsafe_allow_html=True)
 
-    #     rows = ['Current']
-    #     values = [current_pct]
-    #     bar_colors_gauge = ['#fb923c' if not thresh_safe else '#34d399']
+        rows = ['Current']
+        values = [current_pct]
+        bar_colors_gauge = ['#fb923c' if not thresh_safe else '#34d399']
 
-    #     if not thresh_safe and thresh_possible:
-    #         pct_after_thresh_gauge = (attended + thresh_needed) / (total_lectures + thresh_needed) * 100
-    #         rows.append(f'After {thresh_needed} lectures (→{THRESHOLD}%)')
-    #         values.append(pct_after_thresh_gauge)
-    #         bar_colors_gauge.append('#4f8ef7')
+        if not thresh_safe and thresh_possible:
+            pct_after_thresh_gauge = (attended + thresh_needed) / (total_lectures + thresh_needed) * 100
+            rows.append(f'After {thresh_needed} lectures (→{THRESHOLD}%)')
+            values.append(pct_after_thresh_gauge)
+            bar_colors_gauge.append('#4f8ef7')
 
-    #     if personal_target != THRESHOLD and not personal_safe and personal_possible:
-    #         pct_after_personal_gauge = (attended + personal_needed) / (total_lectures + personal_needed) * 100
-    #         rows.append(f'After {personal_needed} lectures (→{personal_target}%)')
-    #         values.append(pct_after_personal_gauge)
-    #         bar_colors_gauge.append('#a78bfa')
+        if personal_target != THRESHOLD and not personal_safe and personal_possible:
+            pct_after_personal_gauge = (attended + personal_needed) / (total_lectures + personal_needed) * 100
+            rows.append(f'After {personal_needed} lectures (→{personal_target}%)')
+            values.append(pct_after_personal_gauge)
+            bar_colors_gauge.append('#a78bfa')
 
-    #     fig_p, ax_p = plt.subplots(figsize=(8, max(1.4, len(rows) * 0.8)), facecolor='#1a1e2b')
-    #     ax_p.set_facecolor('#1a1e2b')
-    #     for i, (row, val, col) in enumerate(zip(rows, values, bar_colors_gauge)):
-    #         ax_p.barh([row], [val], color=col, height=0.45, label=f'{row}: {val:.1f}%')
-    #         ax_p.barh([row], [100 - val], left=val, color='#252a3a', height=0.45)
-    #         ax_p.text(val + 0.8, i, f'{val:.1f}%', va='center', color='#e2e8f0', fontsize=8)
+        fig_p, ax_p = plt.subplots(figsize=(8, max(1.4, len(rows) * 0.8)), facecolor='#1a1e2b')
+        ax_p.set_facecolor('#1a1e2b')
+        for i, (row, val, col) in enumerate(zip(rows, values, bar_colors_gauge)):
+            ax_p.barh([row], [val], color=col, height=0.45, label=f'{row}: {val:.1f}%')
+            ax_p.barh([row], [100 - val], left=val, color='#252a3a', height=0.45)
+            ax_p.text(val + 0.8, i, f'{val:.1f}%', va='center', color='#e2e8f0', fontsize=8)
 
-    #     ax_p.axvline(THRESHOLD, color='#facc15', linewidth=2, linestyle='--', label=f'{THRESHOLD}% Institutional Min')
-    #     if personal_target != THRESHOLD:
-    #         ax_p.axvline(personal_target, color='#a78bfa', linewidth=1.5, linestyle=':', label=f'{personal_target}% Personal Target')
-    #     ax_p.set_xlim(0, 105)
-    #     ax_p.set_xlabel('Attendance %', color='#64748b', fontsize=9)
-    #     ax_p.tick_params(colors='#64748b', labelsize=8)
-    #     for spine in ax_p.spines.values(): spine.set_visible(False)
-    #     ax_p.legend(facecolor='#252a3a', edgecolor='#252a3a', labelcolor='#e2e8f0', fontsize=7.5, loc='lower right')
-    #     plt.tight_layout()
-    #     st.pyplot(fig_p)
-    #     plt.close()
+        ax_p.axvline(THRESHOLD, color='#facc15', linewidth=2, linestyle='--', label=f'{THRESHOLD}% Institutional Min')
+        if personal_target != THRESHOLD:
+            ax_p.axvline(personal_target, color='#a78bfa', linewidth=1.5, linestyle=':', label=f'{personal_target}% Personal Target')
+        ax_p.set_xlim(0, 105)
+        ax_p.set_xlabel('Attendance %', color='#64748b', fontsize=9)
+        ax_p.tick_params(colors='#64748b', labelsize=8)
+        for spine in ax_p.spines.values(): spine.set_visible(False)
+        ax_p.legend(facecolor='#252a3a', edgecolor='#252a3a', labelcolor='#e2e8f0', fontsize=7.5, loc='lower right')
+        plt.tight_layout()
+        st.pyplot(fig_p)
+        plt.close()
 
     # ── Back button ──
     st.markdown("<br>", unsafe_allow_html=True)
@@ -878,20 +909,197 @@ else:
     # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     with tab2:
         st.markdown("<br>", unsafe_allow_html=True)
+
+        # ── Initial resolve (may be overridden after expander retraining) ───────
+        _active_model  = st.session_state.get('custom_model') or model
+        _custom_params = st.session_state.get('custom_params')
+        _using_custom  = st.session_state.get('custom_model') is not None
+
+        # ══════════════════════════════════════════════════════
+        # ── CUSTOM PARAMETERS PANEL (collapsible) ────────────
+        # ══════════════════════════════════════════════════════
+        with st.expander("⚙️ Custom Parameters — Configure Your Institution's Metrics", expanded=False):
+            st.markdown("""
+            <div style='color:#64748b; font-size:0.82rem; margin-bottom:16px; line-height:1.6;'>
+                Upload a CSV with <b style='color:#e2e8f0;'>Student_ID</b> and your new metric columns.
+                The app merges it with the main dataset, auto-detects features, and retrains silently.
+                Toggle features on/off — sliders update instantly in the estimator below.
+            </div>
+            """, unsafe_allow_html=True)
+
+            cp_left, cp_right = st.columns([1, 1.3], gap="large")
+
+            with cp_left:
+                st.markdown("<div class='section-header'>① Upload Your Custom CSV</div>", unsafe_allow_html=True)
+                st.markdown("""
+                <div style='background:#13161e; border-radius:10px; padding:12px 14px; margin-bottom:12px;
+                            border:1px solid #252a3a; font-size:0.78rem; color:#94a3b8; line-height:1.8;'>
+                    <b style='color:#facc15;'>Must include:</b><br>
+                    • <code style='color:#4f8ef7;'>Student_ID</code> — 1 to 6607, matches main dataset row order<br>
+                    • Your new metric columns (e.g. Unit_Test_Score, Practical_Score, Viva_Marks)<br><br>
+                    <b style='color:#facc15;'>Automatically kept:</b><br>
+                    • Attendance, Previous_Scores, Tutoring_Sessions from main dataset
+                </div>
+                """, unsafe_allow_html=True)
+
+                uploaded_csv = st.file_uploader("📂 Upload CSV", type=['csv'], key="cp_upload",
+                                                help="Must include Student_ID column")
+
+            with cp_right:
+                st.markdown("<div class='section-header'>② Select Active Features</div>", unsafe_allow_html=True)
+
+                if uploaded_csv is not None:
+                    try:
+                        cdf_raw = pd.read_csv(uploaded_csv)
+
+                        if 'Student_ID' not in cdf_raw.columns:
+                            st.error("❌ CSV must have a **Student_ID** column.")
+                        else:
+                            # Merge with main dataset
+                            base = df_raw.copy()
+                            base['Student_ID'] = range(1, len(base) + 1)
+                            existing_cols   = set(base.columns)
+                            new_metric_cols = [c for c in cdf_raw.columns
+                                               if c not in ('Student_ID', 'Name', 'Exam_Score')
+                                               and c not in existing_cols]
+                            keep_cols = ['Student_ID'] + new_metric_cols
+                            merged = base.merge(cdf_raw[keep_cols], on='Student_ID', how='inner')
+
+                            st.success(f"✅ {len(merged):,} students merged · {len(new_metric_cols)} new column(s): **{', '.join(new_metric_cols)}**")
+
+                            # All numeric candidates (exclude IDs, names, target)
+                            ALWAYS_EXCLUDE = {'Student_ID', 'Name', 'Exam_Score'}
+                            all_numeric = [c for c in merged.columns
+                                           if c not in ALWAYS_EXCLUDE
+                                           and pd.api.types.is_numeric_dtype(merged[c])]
+
+                            # Default: Attendance ON, standard cols ON, new cols ON
+                            auto_on = {'Attendance', 'Previous_Scores', 'Tutoring_Sessions'} | set(new_metric_cols)
+
+                            st.markdown("<div style='color:#a78bfa; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px;'>Toggle features — sliders update live below</div>", unsafe_allow_html=True)
+
+                            selected_features = []
+                            feat_cols = st.columns(2)
+                            for i, col in enumerate(all_numeric):
+                                with feat_cols[i % 2]:
+                                    checked = st.checkbox(
+                                        col.replace('_', ' '),
+                                        value=(col in auto_on),
+                                        key=f"feat_{col}"
+                                    )
+                                if checked:
+                                    selected_features.append(col)
+
+                            if selected_features:
+                                # ── Silently retrain whenever feature set changes ──
+                                cache_key = tuple(sorted(selected_features))
+                                prev_key  = st.session_state.get('_feat_cache_key')
+
+                                if cache_key != prev_key:
+                                    from sklearn.ensemble import RandomForestRegressor
+                                    Xc = merged[selected_features].fillna(merged[selected_features].median())
+                                    yc = merged['Exam_Score']
+                                    cm = RandomForestRegressor(
+                                        n_estimators=100, max_depth=8, random_state=42, n_jobs=-1
+                                    )
+                                    cm.fit(Xc, yc)
+
+                                    label_map = {
+                                        'Attendance':        'Attendance %',
+                                        'Previous_Scores':   'Previous Exam Score',
+                                        'Tutoring_Sessions': 'Tutoring Sessions',
+                                        'Hours_Studied':     'Hours Studied / Week',
+                                        'Unit_Test_Score':   'Unit Test Score',
+                                        'Practical_Score':   'Practical Score',
+                                        'Viva_Marks':        'Viva Marks',
+                                    }
+                                    cp_info = {
+                                        'features':  selected_features,
+                                        'labels':    [label_map.get(f, f.replace('_', ' ').title()) for f in selected_features],
+                                        'merged_df': merged,
+                                    }
+                                    st.session_state['custom_model']    = cm
+                                    st.session_state['custom_params']   = cp_info
+                                    st.session_state['custom_df']       = merged
+                                    st.session_state['_feat_cache_key'] = cache_key
+                                    st.session_state['prediction_result'] = None  # reset stale result
+
+                                # Show active feature list
+                                st.markdown(f"""
+                                <div style='margin-top:12px; padding:8px 12px; background:#4f8ef718;
+                                            border:1px solid #4f8ef740; border-radius:8px;
+                                            font-size:0.75rem; color:#94a3b8;'>
+                                    ✅ <b style='color:#e2e8f0;'>{len(selected_features)} features active</b> —
+                                    {", ".join(selected_features)}
+                                </div>
+                                """, unsafe_allow_html=True)
+                            else:
+                                st.warning("Select at least one feature.")
+
+                    except Exception as e:
+                        st.error(f"❌ Error processing CSV: {e}")
+
+                else:
+                    st.markdown("""
+                    <div style='padding:40px 16px; text-align:center; color:#64748b;
+                                border:1px dashed #252a3a; border-radius:10px;'>
+                        <div style='font-size:2rem; margin-bottom:6px;'>📂</div>
+                        <div style='font-weight:600; font-size:0.85rem;'>Upload a CSV to get started</div>
+                        <div style='font-size:0.75rem; margin-top:4px;'>
+                            Include <code style='color:#4f8ef7;'>Student_ID</code> and your metric columns
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            # Reset button (only shown when custom is active)
+            if st.session_state.get('custom_model') is not None:
+                st.markdown("<br>", unsafe_allow_html=True)
+                feats_active = st.session_state['custom_params']['features']
+                st.markdown(f"""
+                <div style='padding:8px 14px; background:#34d39918; border:1px solid #34d39940;
+                            border-radius:8px; font-size:0.78rem; color:#34d399;'>
+                    ⚙️ Custom model active — <b style='color:#e2e8f0;'>{len(feats_active)} features</b>.
+                    Collapse this panel and use the estimator below.
+                </div>
+                """, unsafe_allow_html=True)
+                if st.button("🔄 Reset to Default Model", key="cp_reset"):
+                    for k in ('custom_model', 'custom_params', 'custom_df', '_feat_cache_key'):
+                        st.session_state[k] = None
+                    st.session_state['prediction_result'] = None
+                    st.rerun()
+
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # ── ESTIMATOR PANEL ──────────────────────────────────
+        # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        # Re-read after possible retraining above
+        _active_model  = st.session_state.get('custom_model') or model
+        _custom_params = st.session_state.get('custom_params')
+        _using_custom  = st.session_state.get('custom_model') is not None
+
+        st.markdown("<br>", unsafe_allow_html=True)
         col_in, col_out = st.columns([1, 1.3], gap="large")
 
         with col_in:
             st.markdown("<div class='edu-card' style='padding:28px;'>", unsafe_allow_html=True)
             st.markdown("<div class='section-header'>Student Parameters</div>", unsafe_allow_html=True)
 
-            att  = st.slider("📅 Attendance %",         0, 100, 85,
-                             help="Percentage of classes attended")
-            hrs  = st.slider("📚 Hours Studied / Week", 0, 50,  20,
-                             help="Average weekly study hours")
-            prev = st.slider("📝 Previous Score",       0, 100, 70,
-                             help="Last exam score")
-            tut  = st.number_input("🧑‍🏫 Tutoring Sessions", 0, 10, 2,
-                                   help="Number of tutoring sessions attended")
+            if _using_custom and _custom_params:
+                _feats  = _custom_params['features']
+                _labels = _custom_params['labels']
+                _merged = _custom_params['merged_df']
+                custom_vals = []
+                for fi, (feat, lbl) in enumerate(zip(_feats, _labels)):
+                    f_min = int(_merged[feat].min()) if feat in _merged.columns else 0
+                    f_max = max(int(_merged[feat].max()), f_min + 1) if feat in _merged.columns else 100
+                    f_med = int(_merged[feat].median()) if feat in _merged.columns else 50
+                    v = st.slider(f"📊 {lbl}", f_min, f_max, f_med, key=f"est_slider_{fi}")
+                    custom_vals.append(v)
+            else:
+                custom_vals = None
+                att  = st.slider("📅 Attendance %",         0, 100, 85, help="Percentage of classes attended")
+                hrs  = st.slider("📚 Hours Studied / Week", 0, 50,  20, help="Average weekly study hours")
+                prev = st.slider("📝 Previous Score",       0, 100, 70, help="Last exam score")
+                tut  = st.number_input("🧑\u200d🏫 Tutoring Sessions", 0, 10, 2, help="Number of tutoring sessions attended")
 
             st.markdown("<br>", unsafe_allow_html=True)
             run = st.button("🔍 Predict Grade", use_container_width=True)
@@ -902,11 +1110,22 @@ else:
                 st.session_state['prediction_result'] = None
 
             if run:
-                input_data = np.array([[att, hrs, prev, tut]])
-                prediction = model.predict(input_data)[0]
+                if _using_custom and _custom_params and custom_vals is not None:
+                    input_data = np.array([custom_vals])
+                    att  = custom_vals[0] if len(custom_vals) > 0 else 0
+                    hrs  = custom_vals[1] if len(custom_vals) > 1 else 0
+                    prev = custom_vals[2] if len(custom_vals) > 2 else 0
+                    tut  = custom_vals[3] if len(custom_vals) > 3 else 0
+                else:
+                    input_data = np.array([[att, hrs, prev, tut]])
+                prediction = _active_model.predict(input_data)[0]
                 st.session_state['prediction_result'] = {
-                    'prediction': prediction,
-                    'att': att, 'hrs': hrs, 'prev': prev, 'tut': tut
+                    'prediction':  prediction,
+                    'att':         att,
+                    'hrs':         hrs,
+                    'prev':        prev,
+                    'tut':         tut,
+                    'custom_vals': custom_vals if (_using_custom and custom_vals is not None) else None,
                 }
 
             if st.session_state['prediction_result'] is None:
@@ -980,10 +1199,10 @@ else:
 
 Attendance of **{att_r}%** is severely below the minimum threshold — immediate action required.
 
-**Action Task 1:** Initiate parental/guardian contact within 24 hours. \\
-**Action Task 2:** Issue a formal Attendance Warning Letter and log it in the student record.\\
-**Action Task 3:** Refer to school counsellor for root-cause assessment (transport, health, family).\\
-**Action Task 4:** Set up a weekly attendance check-in with the form tutor.\\
+**Action Task 1:** Initiate parental/guardian contact within 24 hours.
+**Action Task 2:** Issue a formal Attendance Warning Letter and log it in the student record.
+**Action Task 3:** Refer to school counsellor for root-cause assessment (transport, health, family).
+**Action Task 4:** Set up a weekly attendance check-in with the form tutor.
 
 Without urgent attendance recovery, academic continuation is at serious risk.
                     """)
@@ -993,10 +1212,10 @@ Without urgent attendance recovery, academic continuation is at serious risk.
 
 Attendance of **{att_r}%** is below the mandatory 75% threshold.
 
-**Action Task 1:** Schedule a 1-on-1 support meeting this week — identify barriers (transport, health, motivation).
-**Action Task 2:** Create a personalised Attendance Improvement Plan (AIP) with weekly targets.
-**Action Task 3:** Assign a peer study buddy to encourage daily attendance.
-**Action Task 4:** Monitor for the next 3 weeks and escalate if no improvement is seen.
+**Action Task 1:** Schedule a 1-on-1 support meeting this week — identify barriers (transport, health, motivation).\\
+**Action Task 2:** Create a personalised Attendance Improvement Plan (AIP) with weekly targets.\\
+**Action Task 3:** Assign a peer study buddy to encourage daily attendance.\\
+**Action Task 4:** Monitor for the next 3 weeks and escalate if no improvement is seen.\\
 
 📈 A 10% attendance boost is projected to improve the exam score by ~5 marks.
                     """)
@@ -1035,12 +1254,26 @@ Excellent indicators across attendance, study hours, and predicted grade (**{pre
 
                 # What-If Scenarios
                 st.markdown("<div class='section-header' style='margin-top:20px;'>📐 What-If Scenarios</div>", unsafe_allow_html=True)
-                scenarios = {
-                    "Current":          model.predict([[att_r,              hrs_r,              res['prev'], tut_r]])[0],
-                    "+10% Attendance":  model.predict([[min(att_r+10, 100), hrs_r,              res['prev'], tut_r]])[0],
-                    "+5 Study Hours":   model.predict([[att_r,              min(hrs_r+5, 50),   res['prev'], tut_r]])[0],
-                    "+1 Tutoring Ses":  model.predict([[att_r,              hrs_r,              res['prev'], min(tut_r+1, 10)]])[0],
-                }
+                if _using_custom and _custom_params:
+                    _feats_wif  = _custom_params['features']
+                    _labels_wif = _custom_params['labels']
+                    _merged_wif = _custom_params['merged_df']
+                    # Reconstruct base input from stored result
+                    _base_vals  = st.session_state['prediction_result'].get('custom_vals',
+                                  [res['att'], res['hrs'], res['prev'], res['tut']])[:len(_feats_wif)]
+                    scenarios = {"Current": _active_model.predict([_base_vals])[0]}
+                    for fi, lbl in enumerate(_labels_wif):
+                        boosted = list(_base_vals)
+                        f_max   = int(_merged_wif[_feats_wif[fi]].max()) if _feats_wif[fi] in _merged_wif.columns else 100
+                        boosted[fi] = min(boosted[fi] + 10, f_max)
+                        scenarios[f"+10 {lbl[:14]}"] = _active_model.predict([boosted])[0]
+                else:
+                    scenarios = {
+                        "Current":          _active_model.predict([[att_r,              hrs_r,              res['prev'], tut_r]])[0],
+                        "+10% Attendance":  _active_model.predict([[min(att_r+10, 100), hrs_r,              res['prev'], tut_r]])[0],
+                        "+5 Study Hours":   _active_model.predict([[att_r,              min(hrs_r+5, 50),   res['prev'], tut_r]])[0],
+                        "+1 Tutoring":      _active_model.predict([[att_r,              hrs_r,              res['prev'], min(tut_r+1, 10)]])[0],
+                    }
                 fig7, ax7 = plt.subplots(figsize=(6, 2.5), facecolor='#1a1e2b')
                 ax7.set_facecolor('#1a1e2b')
                 s_labels = list(scenarios.keys())
